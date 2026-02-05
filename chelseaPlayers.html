@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chelsea Player Stats 2023 Edition</title>
+</head>
+
+<style>
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #e6f0fa;
+    color: #1b1b1b;
+    text-align: center;
+}
+
+#banner {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+h1 {
+    color: #034694 /* Chelsea Blue Color */
+    margin-bottom: 20px;
+}
+
+button, input {
+
+    margin: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+
+}
+
+button {
+    background-color: #034694;
+    color:white;
+    cursor: pointer;
+}
+
+input {
+    
+    border: 1px solid #ccc;
+
+    }
+
+#player-info {
+    
+    margin-top: 30px;
+
+    }
+
+#player-info img {
+
+      margin-top: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+
+    }
+
+</style>
+
+<body>
+
+<img id="banner" src="https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg" alt="Chelsea Banner">
+
+<div class = "container">
+<h1>Random Chelsea Players from 2023!</h1>
+    <button id="random-player">Get Random Player</button>
+
+    <button id="reset" >Reset</button>
+
+    <input id="search-bar"  type="text" placeholder="Search Player">
+
+    <div id="player-info"></div>
+
+
+</div>
+<script>
+
+// ------------------------------
+// Evan Aubry / Spring 2025 / CIS231 / Cairn University
+// This file fetches Chelsea players who have minutes played in the 2023 season, where you can search them by name or click the random button to show a random player.
+
+
+const API_KEY = '5f3970508a5fb3d609a78be6bbe548c9';
+const teamID = '49';
+const season = 2023;
+const apiUrl = `https://v3.football.api-sports.io/players?team=${teamID}&season=${season}&page=`;
+
+// stores the list of players who have gotten minutes in the 2023 season in the premier league
+let chelseaPlayers = [];
+
+//fetches players for multiple pages
+function fetchPlayers() {
+
+    let allPlayers = []; // a temporary array, stores every single player from multiple pages
+    let page = 1;
+    let totalPages = 3;
+
+function fetchPage(page) {
+
+    fetch(apiUrl + page, {
+        headers: {
+            'x-apisports-key': API_KEY
+        }
+    })
+
+    .then(response => response.json())
+    .then(data => {
+
+
+    console.log(data); //used to see lists of json data in the console
+
+    //checks of the data is available, since it may take a second for the data to be present
+    if(data.response) {
+        allPlayers = allPlayers.concat(data.response); //combines all of the data from a 3 pages
+
+        //used so that all the pages are fetched
+        if(page < totalPages) {
+            fetchPage(page + 1);
+        } else {
+        chelseaPlayers = allPlayers.filter(player => player.statistics[0].games.minutes > 0);
+        
+        console.log(chelseaPlayers);
+        }
+        }
+    })
+    .catch(err => console.error('Error fetching data:', err));
+
+
+}
+
+fetchPage(page);
+
+}
+
+function displayPlayer(player) {
+
+    const playerInfo = document.getElementById('player-info');
+    playerInfo.innerHTML = ''; //clears any content already existing first
+
+    const nameElement = document.createElement('h3');
+    nameElement.textContent = `Name: ${player.player.name}`;
+
+    const positionElement = document.createElement('p');
+    positionElement.textContent = `Position: ${player.statistics[0].games.position}`;
+
+    const goalsElement = document.createElement('p');
+    goalsElement.textContent = `Goals: ${player.statistics[0].goals.total}`;
+
+    const assistsElement = document.createElement('p');
+    assistsElement.textContent = `Assists: ${player.statistics[0].goals.assists ?? 0}`;
+
+    const minutesElement = document.createElement('p');
+    minutesElement.textContent = `Minutes Played: ${player.statistics[0].games.minutes}`;
+
+    const imgElement = document.createElement('img');
+
+    imgElement.src = player.player.photo;
+    imgElement.alt = player.player.name;
+    imgElement.width = 200;
+
+
+    //appends all of these elements to the PlayerInfo using appendChild
+    playerInfo.appendChild(nameElement);
+    playerInfo.appendChild(positionElement);
+    playerInfo.appendChild(goalsElement);
+    playerInfo.appendChild(assistsElement);
+    playerInfo.appendChild(minutesElement);
+    playerInfo.appendChild(imgElement);
+
+}
+  
+// Random Player Button
+
+document.getElementById('random-player').addEventListener('click', () => {
+
+    if(chelseaPlayers.length > 0) {
+        const randomIndex = Math.floor(Math.random() * chelseaPlayers.length);
+        displayPlayer(chelseaPlayers[randomIndex]);
+    }
+})
+
+document.getElementById('search-bar').addEventListener('input', (event) => {
+    const searchTerm = event.target.value.toLowerCase();
+    const filtered = chelseaPlayers.filter(player => player.player.name.toLowerCase().includes(searchTerm));
+    if (filtered.length > 0) {
+        displayPlayer(filtered[0]);
+    } else {
+        document.getElementById('player-info').innerHTML = '<p> No player found.</p>';
+    }
+});
+
+
+
+  // Reset Button
+  document.getElementById('reset').addEventListener('click', () => {
+        const playerInfoDiv = document.getElementById('player-info');
+        playerInfoDiv.innerHTML = ''; // Clears any player info that is displayed
+        document.getElementById('search-bar').value = ''; // Clears the search bar
+    
+    });
+
+
+//fetches the players when the page loads
+
+    fetchPlayers();
+
+</script>
+
+
+</body>
+</html>
