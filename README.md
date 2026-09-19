@@ -1,4 +1,4 @@
-# Chelsea-Player-Analytics-App
+# Chelsea-Player-Analytics-App-2023
 
 Project Overview
 An interactive web application designed to fetch and display real-time athlete statistics for the Chelsea FC 2023 season. This project demonstrates the ability to integrate third-party REST APIs with a responsive frontend interface.
